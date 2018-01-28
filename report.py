@@ -65,33 +65,32 @@ def get_most_error_day():
 
 def print_top_articles(list_count):
     """Prints the articles and number of times viewed."""
-    print (
-        "\n\nWhat are the most popular %d articles of all time?\n" % list_count
-    )
+    print("What are the most popular %d articles of all time?\n" % list_count)
     top_articles = "\"%s\" - %d views\n"
     results = "".join(
         top_articles % (title, views) for title, views in get_top_articles(
             list_count))
-    print (results)
+    print(results)
 
 
 def print_top_authors():
     """Prints the author and total times their article were viewed."""
-    print ("\n\nWhat are the most popular article authors of all time?\n")
+    print("What are the most popular article authors of all time?\n")
     top_authors = "%s - %d views\n"
     results = "".join(
         top_authors % (name, views) for name, views in get_top_authors())
-    print (results)
+    print(results)
 
 
 def print_top_errors():
     """Prints day(s) where requests had more than 1 percent error."""
-    print ("\n\nOn which days did more than 1% of requests lead to errors?\n")
+    print("On which days did more than 1% of requests lead to errors?\n")
     top_authors = "%s - % 6.2f%% errors\n"
     results = "".join(
         top_authors % (
             logdate, err_pct) for logdate, err_pct in get_most_error_day())
-    print (results)
+    print(results)
+
 
 print_top_articles(3)
 print_top_authors()
