@@ -7,6 +7,7 @@ Download the files including sub-folders from [github repository] https://github
 # Code
 This consists of the following:
 - report.py - main python code that connects, queries and prints output from data in the news database
+- output.txt - sample output file
 
 # How to use
 Run the report.py using python3 command
