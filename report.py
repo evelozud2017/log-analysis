@@ -6,14 +6,14 @@ DBNAME = "news"
 
 def get_top_articles(list_count):
     """Return article and number of times viewed with most viewed first."""
-    query = (
-        'select a.title, count(alv.article) as views from articles a, '
-        ' article_log_view alv where a.slug = alv.article '
-        ' group by a.title '
-        ' order by count(alv.article) desc limit %d;' % list_count)
+    query = """
+        select a.title, sum(alv.views) as views from articles a,
+         article_log_view alv where a.slug = alv.article
+         group by a.title
+         order by sum(alv.views) desc limit %s;"""
     db = psycopg2.connect(database=DBNAME)
     c = db.cursor()
-    c.execute(query)
+    c.execute(query, (list_count,))
     rows = c.fetchall()
     db.close()
     return rows
@@ -21,14 +21,14 @@ def get_top_articles(list_count):
 
 def get_top_authors():
     """Return author and number of views with most viewed first."""
-    query = (
-        'select au.name, count(alv.article) as views '
-        ' from articles a inner join article_log_view alv '
-        ' on a.slug = alv.article '
-        ' inner join authors au '
-        ' on a.author = au.id '
-        ' group by au.name '
-        ' order by count(alv.article) desc;')
+    query = """
+        select au.name, sum(alv.views) as views
+         from articles a inner join article_log_view alv
+         on a.slug = alv.article
+         inner join authors au
+         on a.author = au.id
+         group by au.name
+         order by sum(alv.views) desc;"""
     db = psycopg2.connect(database=DBNAME)
     c = db.cursor()
     c.execute(query)
@@ -39,23 +39,23 @@ def get_top_authors():
 
 def get_most_error_day():
     """Return day with errors > 1%."""
-    query = (
-        'select tot.logdate, '
-        ' round(((err.errors_count::decimal/tot.requests_count)*100),2) '
-        ' as err_pct '
-        ' from '
-        ' ( select to_char(time, \'FMMonth DD, YYYY\') as logdate, '
-        ' count(*) as requests_count '
-        ' from log '
-        ' group by to_char(time, \'FMMonth DD, YYYY\') ) tot, '
-        '( select to_char(time, \'FMMonth DD, YYYY\') as logdate,  '
-        ' count(*) as errors_count '
-        ' from log '
-        ' where status <> \'200 OK\' '
-        ' group by to_char(time, \'FMMonth DD, YYYY\') ) err '
-        ' where '
-        ' tot.logdate = err.logdate '
-        ' and (err.errors_count::decimal/tot.requests_count) > .01; ')
+    query = """
+        select to_char(tot.logdate, 'FMMonth DD, YYYY') as logdate,
+         round(((err.errors_count::decimal/tot.requests_count)*100),2)
+         as err_pct
+         from
+         ( select date(time) as logdate,
+         count(*) as requests_count
+         from log
+         group by date(time) ) tot,
+        ( select date(time) as logdate,
+         count(*) as errors_count
+         from log
+         where status <> '200 OK'
+         group by date(time) ) err
+         where
+         tot.logdate = err.logdate
+         and (err.errors_count::decimal/tot.requests_count) > .01;"""
     db = psycopg2.connect(database=DBNAME)
     c = db.cursor()
     c.execute(query)
@@ -93,6 +93,8 @@ def print_top_errors():
     print(results)
 
 
-print_top_articles(3)
-print_top_authors()
-print_top_errors()
+if __name__ == "__main__":
+    """Call print methods"""
+    print_top_articles(3)
+    print_top_authors()
+    print_top_errors()
